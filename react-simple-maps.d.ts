@@ -19,8 +19,18 @@ declare module "react-simple-maps" {
     children: (args: { geographies: any[] }) => React.ReactNode;
   }
 
-  export interface GeographyProps extends SVGProps<SVGPathElement> {
+  export interface GeographyStyle {
+    default?: React.CSSProperties;
+    hover?: React.CSSProperties;
+    pressed?: React.CSSProperties;
+  }
+
+  export interface GeographyProps extends Omit<
+    SVGProps<SVGPathElement>,
+    "style"
+  > {
     geography: any;
+    style?: GeographyStyle;
   }
 
   export const ComposableMap: ComponentType<ComposableMapProps>;
