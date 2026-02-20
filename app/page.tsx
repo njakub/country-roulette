@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import MapRoulette from "./components/MapRoulette";
 import Sidebar from "./components/Sidebar";
 import { getUsedCountries, saveUsedCountries } from "./utils/storage";
@@ -17,6 +17,7 @@ export default function Home() {
   const [isSpinning, setIsSpinning] = useState(false);
   const [allCountries, setAllCountries] = useState<Country[]>([]);
   const [mounted, setMounted] = useState(false);
+  const hasRestoredSelection = useRef(false);
 
   // Load used countries from server on mount
   useEffect(() => {
@@ -35,7 +36,7 @@ export default function Home() {
       .catch((error) => console.error("Error loading countries:", error));
   }, []);
 
-  // Update used countries list when IDs change
+  // Update used countries list when IDs change; restore last selection on mount
   useEffect(() => {
     if (allCountries.length === 0) return;
 
@@ -44,6 +45,17 @@ export default function Home() {
       .filter((c): c is Country => c !== undefined);
 
     setUsedCountriesList(list);
+
+    // Restore the last selected country if nothing is selected yet (e.g. after refresh)
+    if (!hasRestoredSelection.current && list.length > 0) {
+      hasRestoredSelection.current = true;
+      const last = list[list.length - 1];
+      setSelectedCountry({
+        id: last.id,
+        name: last.name,
+        iso_a2: last.iso_a2 ?? null,
+      });
+    }
   }, [usedCountriesIds, allCountries]);
 
   const handleCountrySelected = (countryId: string, countryName: string) => {
@@ -70,6 +82,15 @@ export default function Home() {
     setUsedCountriesIds(newUsed);
     saveUsedCountries(newUsed);
     if (selectedCountry?.id === removed) {
+      setSelectedCountry(null);
+    }
+  };
+
+  const handleRemoveCountry = (countryId: string) => {
+    const newUsed = usedCountriesIds.filter((id) => id !== countryId);
+    setUsedCountriesIds(newUsed);
+    saveUsedCountries(newUsed);
+    if (selectedCountry?.id === countryId) {
       setSelectedCountry(null);
     }
   };
@@ -103,6 +124,7 @@ export default function Home() {
           onSpin={handleSpin}
           onReset={handleReset}
           onUndo={handleUndo}
+          onRemoveCountry={handleRemoveCountry}
           allCountriesUsed={allCountriesUsed}
         />
       </div>

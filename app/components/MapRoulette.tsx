@@ -23,7 +23,7 @@ export default function MapRoulette({
   setIsSpinning,
 }: MapRouletteProps) {
   const [geoData, setGeoData] = useState<any>(null);
-  const [currentHighlight, setCurrentHighlight] = useState<string | null>(null);
+  const [currentHighlight, setCurrentHighlight] = useState<string[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
   const [mapScale, setMapScale] = useState(147);
@@ -73,21 +73,33 @@ export default function MapRoulette({
     let tickCount = 0;
     let delay = 60; // Start at 60ms
     const maxTicks = 50;
-    const maxDelay = 700;
+    const maxDelay = 400;
+    // Threshold delay above which we drop to 1 highlight
+    const singleHighlightDelay = 150;
 
     const tick = () => {
-      // Pick a random eligible country for this tick
-      const randomCountry = getRandomCountry(eligibleCountries);
-      setCurrentHighlight(randomCountry);
+      // Pick 2 countries while fast, taper to 1 as it slows
+      const count = delay < singleHighlightDelay ? 2 : 1;
+      const picks: string[] = [];
+      const pool = [...eligibleCountries];
+      for (let i = 0; i < count; i++) {
+        if (pool.length === 0) break;
+        const pick = getRandomCountry(pool);
+        picks.push(pick);
+        // remove pick from pool so we don't pick the same country twice
+        pool.splice(pool.indexOf(pick), 1);
+      }
+      setCurrentHighlight(picks);
 
       tickCount++;
       delay *= 1.1; // Increase delay by 10%
 
       // Stop condition: reached max ticks or delay is too long
       if (tickCount >= maxTicks || delay >= maxDelay) {
-        // Final selection
+        // Final selection — always pick 1
+        const randomCountry = getRandomCountry(eligibleCountries);
         setSelectedCountry(randomCountry);
-        setCurrentHighlight(null);
+        setCurrentHighlight([]);
         setIsSpinning(false);
 
         // Find country name
@@ -176,13 +188,13 @@ export default function MapRoulette({
               const countryId = getCountryId(geo.properties);
               const countryName = getCountryName(geo.properties);
               const isUsed = usedCountries.includes(countryId);
-              const isHighlighted = currentHighlight === countryId;
+              const isHighlighted = currentHighlight.includes(countryId);
               const isSelected = selectedCountry === countryId;
               const isHovered = hoveredCountry === countryId;
 
               let fill = "#E5E7EB"; // Default gray-200
               if (isUsed) {
-                fill = "#9CA3AF"; // Gray-400 for used
+                fill = "#D4B483"; // Tan for used
               }
               if (isHighlighted) {
                 fill = "#FBBF24"; // Bright yellow for spinning highlight
@@ -202,7 +214,7 @@ export default function MapRoulette({
                     default: { outline: "none" },
                     hover: {
                       outline: "none",
-                      fill: isUsed ? "#9CA3AF" : "#D1D5DB",
+                      fill: isUsed ? "#D4B483" : "#D1D5DB",
                       cursor: isUsed ? "default" : "pointer",
                     },
                     pressed: { outline: "none" },

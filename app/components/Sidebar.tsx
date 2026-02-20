@@ -10,6 +10,7 @@ interface SidebarProps {
   onSpin: () => void;
   onReset: () => void;
   onUndo: () => void;
+  onRemoveCountry: (countryId: string) => void;
   allCountriesUsed: boolean;
 }
 
@@ -20,6 +21,7 @@ export default function Sidebar({
   onSpin,
   onReset,
   onUndo,
+  onRemoveCountry,
   allCountriesUsed,
 }: SidebarProps) {
   return (
@@ -114,7 +116,7 @@ export default function Sidebar({
             [...usedCountries].reverse().map((country, index) => (
               <div
                 key={`${country.id}-${index}`}
-                className="bg-gray-700 px-3 py-2 rounded text-sm flex items-center gap-3"
+                className="group bg-gray-700 px-3 py-2 rounded text-sm flex items-center gap-3"
               >
                 {country.iso_a2 && (
                   <CountryFlag
@@ -123,7 +125,17 @@ export default function Sidebar({
                   />
                 )}
                 <span className="font-medium flex-1">{country.name}</span>
-                <span className="text-gray-400 text-xs">{country.id}</span>
+                <span className="text-gray-400 text-xs group-hover:hidden">
+                  {country.id}
+                </span>
+                <button
+                  onClick={() => onRemoveCountry(country.id)}
+                  disabled={isSpinning}
+                  className="hidden group-hover:flex items-center justify-center w-5 h-5 rounded-full text-gray-400 hover:text-white hover:bg-red-500 transition-colors disabled:pointer-events-none flex-shrink-0"
+                  title="Remove"
+                >
+                  ×
+                </button>
               </div>
             ))
           )}
