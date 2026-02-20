@@ -270,14 +270,17 @@ export function getISO_A2FromA3(iso_a3: string): string | null {
  * Prefer ISO_A3, fallback to iso_a3, then id, then NAME
  */
 export function getCountryId(properties: any): string {
-  return (
-    properties.ISO_A3 ||
-    properties.iso_a3 ||
-    properties.id ||
-    properties.NAME ||
-    properties.name ||
-    "UNKNOWN"
-  );
+  const candidates = [
+    properties.ISO_A3,
+    properties.iso_a3,
+    properties.id,
+    properties.NAME,
+    properties.name,
+  ];
+  for (const c of candidates) {
+    if (c && c !== "-99") return c;
+  }
+  return "UNKNOWN";
 }
 
 /**
@@ -294,19 +297,38 @@ export function getCountryName(properties: any): string {
 }
 
 /**
+ * Name-based fallback for countries Natural Earth marks with "-99" on both ISO fields
+ * (typically disputed territories)
+ */
+const NAME_TO_ISO_A2: Record<string, string> = {
+  Taiwan: "TW",
+  Kosovo: "XK",
+  Somaliland: "SO",
+  "N. Cyprus": "CY",
+  "Western Sahara": "EH",
+};
+
+/**
  * Parse all countries from GeoJSON features
  */
 export function parseCountries(features: any[]): Country[] {
   return features.map((feature) => {
-    const iso_a3 = feature.properties.ISO_A3 || feature.properties.iso_a3;
+    const rawA3 = feature.properties.ISO_A3 || feature.properties.iso_a3;
+    const rawA2 = feature.properties.ISO_A2 || feature.properties.iso_a2;
+    const name = getCountryName(feature.properties);
+
+    // "-99" is a Natural Earth placeholder meaning "no valid code"
+    const iso_a3 = rawA3 && rawA3 !== "-99" ? rawA3 : undefined;
     const iso_a2 =
-      feature.properties.ISO_A2 ||
-      feature.properties.iso_a2 ||
-      (iso_a3 ? getISO_A2FromA3(iso_a3) : null);
+      rawA2 && rawA2 !== "-99"
+        ? rawA2
+        : iso_a3
+          ? getISO_A2FromA3(iso_a3)
+          : (NAME_TO_ISO_A2[name] ?? null);
 
     return {
       id: getCountryId(feature.properties),
-      name: getCountryName(feature.properties),
+      name,
       iso_a3,
       iso_a2,
     };

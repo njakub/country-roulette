@@ -17,6 +17,9 @@ export default function Home() {
   const [isSpinning, setIsSpinning] = useState(false);
   const [allCountries, setAllCountries] = useState<Country[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [predeterminedCountryId, setPredeterminedCountryId] = useState<
+    string | null
+  >(null);
   const hasRestoredSelection = useRef(false);
 
   // Load used countries from server on mount
@@ -71,7 +74,6 @@ export default function Home() {
   };
 
   const handleSpin = () => {
-    // Trigger spin via custom event
     window.dispatchEvent(new Event("trigger-spin"));
   };
 
@@ -114,28 +116,33 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* Sidebar */}
-      <div className="w-80 flex-shrink-0">
+    <div className="flex flex-col-reverse md:flex-row h-[100dvh] overflow-hidden">
+      {/* Sidebar — bottom bar on mobile, left panel on desktop */}
+      <div className="md:w-80 md:flex-shrink-0">
         <Sidebar
           selectedCountry={selectedCountry}
           usedCountries={usedCountriesList}
+          allCountries={allCountries}
           isSpinning={isSpinning}
           onSpin={handleSpin}
           onReset={handleReset}
           onUndo={handleUndo}
           onRemoveCountry={handleRemoveCountry}
           allCountriesUsed={allCountriesUsed}
+          predeterminedCountryId={predeterminedCountryId}
+          onSetPredetermined={setPredeterminedCountryId}
         />
       </div>
 
       {/* Map */}
-      <div className="flex-1 bg-gray-100">
+      <div className="flex-1 min-h-0 bg-gray-100">
         <MapRoulette
           usedCountries={usedCountriesIds}
           onCountrySelected={handleCountrySelected}
           isSpinning={isSpinning}
           setIsSpinning={setIsSpinning}
+          predeterminedCountryId={predeterminedCountryId}
+          onSpinComplete={() => setPredeterminedCountryId(null)}
         />
       </div>
     </div>

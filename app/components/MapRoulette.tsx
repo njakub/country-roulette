@@ -14,6 +14,8 @@ interface MapRouletteProps {
   onCountrySelected: (countryId: string, countryName: string) => void;
   isSpinning: boolean;
   setIsSpinning: (spinning: boolean) => void;
+  predeterminedCountryId: string | null;
+  onSpinComplete: () => void;
 }
 
 export default function MapRoulette({
@@ -21,6 +23,8 @@ export default function MapRoulette({
   onCountrySelected,
   isSpinning,
   setIsSpinning,
+  predeterminedCountryId,
+  onSpinComplete,
 }: MapRouletteProps) {
   const [geoData, setGeoData] = useState<any>(null);
   const [currentHighlight, setCurrentHighlight] = useState<string[]>([]);
@@ -97,18 +101,23 @@ export default function MapRoulette({
       // Stop condition: reached max ticks or delay is too long
       if (tickCount >= maxTicks || delay >= maxDelay) {
         // Final selection — always pick 1
-        const randomCountry = getRandomCountry(eligibleCountries);
-        setSelectedCountry(randomCountry);
+        const finalCountry =
+          predeterminedCountryId &&
+          eligibleCountries.includes(predeterminedCountryId)
+            ? predeterminedCountryId
+            : getRandomCountry(eligibleCountries);
+        setSelectedCountry(finalCountry);
         setCurrentHighlight([]);
         setIsSpinning(false);
+        onSpinComplete();
 
         // Find country name
         const feature = geoData.features.find(
-          (f: any) => getCountryId(f.properties) === randomCountry,
+          (f: any) => getCountryId(f.properties) === finalCountry,
         );
         const countryName = feature
           ? getCountryName(feature.properties)
-          : randomCountry;
+          : finalCountry;
 
         // Animate zoom to selected country
         if (feature && feature.geometry) {
@@ -147,7 +156,7 @@ export default function MapRoulette({
         }
 
         // Notify parent
-        onCountrySelected(randomCountry, countryName);
+        onCountrySelected(finalCountry, countryName);
       } else {
         // Schedule next tick
         timeoutRef.current = setTimeout(tick, delay);
@@ -157,12 +166,12 @@ export default function MapRoulette({
     tick();
   };
 
-  // Expose startSpin via a custom event (called from Sidebar)
+  // Expose spin via custom event
   useEffect(() => {
     const handleSpin = () => startSpin();
     window.addEventListener("trigger-spin", handleSpin);
     return () => window.removeEventListener("trigger-spin", handleSpin);
-  }, [geoData, isSpinning, usedCountries]);
+  }, [geoData, isSpinning, usedCountries, predeterminedCountryId]);
 
   if (!geoData) {
     return (
