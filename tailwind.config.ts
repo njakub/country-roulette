@@ -11,11 +11,15 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        gold: "#C9A843",
+      },
+      fontFamily: {
+        bebas: ["var(--font-bebas)", "Impact", "sans-serif"],
       },
       keyframes: {
         "glow-pulse": {
-          "0%, 100%": { filter: "drop-shadow(0 0 8px rgba(234, 179, 8, 0.5))" },
-          "50%": { filter: "drop-shadow(0 0 20px rgba(234, 179, 8, 0.8))" },
+          "0%, 100%": { filter: "drop-shadow(0 0 8px rgba(201, 168, 67, 0.5))" },
+          "50%": { filter: "drop-shadow(0 0 20px rgba(201, 168, 67, 0.85))" },
         },
         "slide-up": {
           "0%": { transform: "translateY(100%)", opacity: "0" },

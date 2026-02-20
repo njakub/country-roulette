@@ -33,6 +33,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const [showResultCard, setShowResultCard] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [search, setSearch] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -62,8 +63,7 @@ export default function Sidebar({
 
   const spinClass = spinDisabled
     ? "bg-gray-700 text-gray-500 cursor-not-allowed"
-    : "bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 hover:from-yellow-500 hover:to-yellow-600 hover:scale-105 active:scale-95 shadow-lg hover:shadow-yellow-400/50";
-
+            : "bg-gold hover:bg-[#e0bc55] text-black font-extrabold hover:scale-105 active:scale-95 shadow-lg hover:shadow-gold/40";
   const predeterminedCountry = predeterminedCountryId
     ? allCountries.find((c) => c.id === predeterminedCountryId)
     : null;
@@ -129,8 +129,43 @@ export default function Sidebar({
     </div>
   );
 
+  const handleResetClick = () => {
+    if (usedCountries.length === 0 || isSpinning) return;
+    setShowResetConfirm(true);
+  };
+
+  const confirmReset = () => {
+    onReset();
+    setShowResetConfirm(false);
+  };
+
   return (
     <>
+      {/* Reset confirmation modal */}
+      {showResetConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-gray-800 border border-gray-600 rounded-xl p-6 mx-4 max-w-sm w-full shadow-2xl">
+            <h2 className="text-lg font-bold text-white mb-2">Reset all countries?</h2>
+            <p className="text-gray-400 text-sm mb-6">
+              This will clear all {usedCountries.length} visited {usedCountries.length === 1 ? "country" : "countries"} and start fresh.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowResetConfirm(false)}
+                className="flex-1 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmReset}
+                className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold transition-colors"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* ── MOBILE ── */}
       <div className="md:hidden flex flex-col">
         {/* Country picker — shown when globe is tapped */}
@@ -143,7 +178,7 @@ export default function Sidebar({
         {/* Result card — slides up after selection */}
         {showResultCard && selectedCountry && (
           <div
-            className="bg-gray-900 border-t-2 border-yellow-400 px-5 py-5 flex flex-col items-center gap-3 animate-slide-up"
+            className="bg-[#111111] border-t-2 border-gold px-5 py-5 flex flex-col items-center gap-3 animate-slide-up"
             onClick={() => setShowResultCard(false)}
           >
             <p className="text-xs text-gray-400 uppercase tracking-widest">
@@ -171,7 +206,7 @@ export default function Sidebar({
         )}
 
         {/* Bottom action bar */}
-        <div className="flex items-center gap-2 bg-gray-900 text-white px-4 py-3 border-t border-gray-700">
+        <div className="flex items-center gap-2 bg-[#111111] text-white px-4 py-3 border-t border-[#2a2a2a]">
           {/* Globe icon — hidden tap target to open picker */}
           <button
             onClick={() => setShowPicker((v) => !v)}
@@ -200,7 +235,7 @@ export default function Sidebar({
             ↶
           </button>
           <button
-            onClick={onReset}
+            onClick={handleResetClick}
             disabled={usedCountries.length === 0 || isSpinning}
             title="Reset all"
             className="w-11 h-11 rounded bg-red-700 hover:bg-red-600 disabled:opacity-30 transition-colors text-base flex items-center justify-center"
@@ -211,7 +246,7 @@ export default function Sidebar({
       </div>
 
       {/* ── DESKTOP: full sidebar ── */}
-      <div className="hidden md:flex bg-gray-900 text-white p-6 flex-col h-full overflow-hidden">
+      <div className="hidden md:flex bg-[#111111] text-white p-6 flex-col h-full overflow-hidden">
         {/* Title — click to toggle country picker */}
         <div className="mb-4">
           <button
@@ -219,12 +254,17 @@ export default function Sidebar({
             className="text-left w-full group"
             title="Click to predetermine the next country"
           >
-            <h1 className="text-3xl font-bold text-yellow-400 mb-1 group-hover:text-yellow-300 transition-colors">
-              🌍 Country Roulette
-            </h1>
+            <div className="leading-none mb-2">
+              <span className="block font-bebas text-5xl tracking-widest text-white group-hover:text-gray-200 transition-colors">
+                COUNTRY
+              </span>
+              <span className="block font-bebas text-5xl tracking-widest text-gold group-hover:text-[#e0bc55] transition-colors">
+                ROULETTE
+              </span>
+            </div>
           </button>
-          <p className="text-gray-400 text-sm">
-            Spin to explore the world, one country at a time!
+          <p className="text-gray-500 text-xs tracking-widest uppercase">
+            Spin to explore the world
           </p>
         </div>
 
@@ -232,7 +272,7 @@ export default function Sidebar({
         {showPicker && (
           <div className="mb-4">
             {predeterminedCountry && (
-              <p className="text-xs text-yellow-400 mb-1.5">
+              <p className="text-xs text-gold mb-1.5">
                 🎯 Next spin lands on:{" "}
                 <strong>{predeterminedCountry.name}</strong>
               </p>
@@ -242,7 +282,7 @@ export default function Sidebar({
         )}
 
         {/* Selected Country Section */}
-        <div className="mb-6 bg-gray-800 rounded-lg p-4 border-2 border-yellow-400">
+        <div className="mb-6 bg-[#1a1a1a] rounded-lg p-4 border-2 border-gold">
           <h2 className="text-sm font-semibold text-gray-400 mb-2">
             CURRENT SELECTION
           </h2>
@@ -287,7 +327,7 @@ export default function Sidebar({
             ↶ UNDO
           </button>
           <button
-            onClick={onReset}
+            onClick={handleResetClick}
             disabled={usedCountries.length === 0 || isSpinning}
             className="flex-1 py-2 px-3 rounded bg-red-600 hover:bg-red-700 disabled:bg-gray-800 disabled:text-gray-600 transition-colors text-sm font-medium"
           >
@@ -300,7 +340,7 @@ export default function Sidebar({
           <h2 className="text-sm font-semibold text-gray-400 mb-2">
             USED COUNTRIES ({usedCountries.length})
           </h2>
-          <div className="flex-1 overflow-y-auto bg-gray-800 rounded-lg p-3 space-y-1">
+          <div className="flex-1 overflow-y-auto bg-[#1a1a1a] rounded-lg p-3 space-y-1">
             {usedCountries.length === 0 ? (
               <p className="text-gray-600 text-sm italic text-center py-4">
                 No countries used yet
