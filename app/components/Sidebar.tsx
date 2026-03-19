@@ -63,7 +63,7 @@ export default function Sidebar({
 
   const spinClass = spinDisabled
     ? "bg-gray-700 text-gray-500 cursor-not-allowed"
-            : "bg-gold hover:bg-[#e0bc55] text-black font-extrabold hover:scale-105 active:scale-95 shadow-lg hover:shadow-gold/40";
+    : "bg-gold hover:bg-[#e0bc55] text-black font-extrabold hover:scale-105 active:scale-95 shadow-lg hover:shadow-gold/40";
   const predeterminedCountry = predeterminedCountryId
     ? allCountries.find((c) => c.id === predeterminedCountryId)
     : null;
@@ -145,9 +145,13 @@ export default function Sidebar({
       {showResetConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="bg-gray-800 border border-gray-600 rounded-xl p-6 mx-4 max-w-sm w-full shadow-2xl">
-            <h2 className="text-lg font-bold text-white mb-2">Reset all countries?</h2>
+            <h2 className="text-lg font-bold text-white mb-2">
+              Reset all countries?
+            </h2>
             <p className="text-gray-400 text-sm mb-6">
-              This will clear all {usedCountries.length} visited {usedCountries.length === 1 ? "country" : "countries"} and start fresh.
+              This will clear all {usedCountries.length} visited{" "}
+              {usedCountries.length === 1 ? "country" : "countries"} and start
+              fresh.
             </p>
             <div className="flex gap-3">
               <button

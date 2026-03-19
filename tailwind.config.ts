@@ -18,7 +18,9 @@ const config: Config = {
       },
       keyframes: {
         "glow-pulse": {
-          "0%, 100%": { filter: "drop-shadow(0 0 8px rgba(201, 168, 67, 0.5))" },
+          "0%, 100%": {
+            filter: "drop-shadow(0 0 8px rgba(201, 168, 67, 0.5))",
+          },
           "50%": { filter: "drop-shadow(0 0 20px rgba(201, 168, 67, 0.85))" },
         },
         "slide-up": {
